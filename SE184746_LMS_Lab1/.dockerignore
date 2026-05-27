@@ -1,0 +1,13 @@
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/*.user
+**/*.suo
+**/agent-transcripts
+**/.git
+**/.gitignore
+**/terminals
+**/README.md
+**/*.md
+!**/SeedData/*.sql
