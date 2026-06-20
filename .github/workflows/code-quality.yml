@@ -1,0 +1,86 @@
+name: Code Quality Evidence
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  code-quality:
+    name: Check LMS Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Check solution exists
+        run: |
+          test -f SE184746_LMS_Lab1/SE184746_LMS_Lab1.sln
+
+      - name: Check 3-layer architecture
+        run: |
+          test -d SE184746_LMS_Lab1/PRN232.LMS.API
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Services
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Repositories
+
+      - name: Check API layer structure
+        run: |
+          test -d SE184746_LMS_Lab1/PRN232.LMS.API/Controllers
+          test -f SE184746_LMS_Lab1/PRN232.LMS.API/Program.cs
+
+      - name: Check Service layer structure
+        run: |
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Services/Interfaces
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Services/Implementations
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Services/Models/Business
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Services/Models/Requests
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Services/Models/Responses
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Services/Models/Common
+
+      - name: Check Repository layer structure
+        run: |
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Repositories/Data
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Repositories/Entities
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Repositories/Interfaces
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Repositories/Implementations
+
+      - name: Check required entity models
+        run: |
+          test -f SE184746_LMS_Lab1/PRN232.LMS.Repositories/Entities/Semester.cs
+          test -f SE184746_LMS_Lab1/PRN232.LMS.Repositories/Entities/Course.cs
+          test -f SE184746_LMS_Lab1/PRN232.LMS.Repositories/Entities/Subject.cs
+          test -f SE184746_LMS_Lab1/PRN232.LMS.Repositories/Entities/Student.cs
+          test -f SE184746_LMS_Lab1/PRN232.LMS.Repositories/Entities/Enrollment.cs
+
+      - name: Check common response and pagination models
+        run: |
+          test -f SE184746_LMS_Lab1/PRN232.LMS.Services/Models/Common/ApiResponse.cs
+          test -f SE184746_LMS_Lab1/PRN232.LMS.Services/Models/Common/PagedResult.cs
+          test -f SE184746_LMS_Lab1/PRN232.LMS.Services/Models/Common/PaginationMetadata.cs
+
+      - name: Check model mapping separation
+        run: |
+          test -d SE184746_LMS_Lab1/PRN232.LMS.Services/Mappings
+          test -f SE184746_LMS_Lab1/PRN232.LMS.Services/Mappings/EntityToBusinessMapper.cs
+          test -f SE184746_LMS_Lab1/PRN232.LMS.Services/Mappings/BusinessToResponseMapper.cs
+
+      - name: Check Docker deployment files
+        run: |
+          test -f SE184746_LMS_Lab1/Dockerfile
+          test -f SE184746_LMS_Lab1/docker-compose.yml
+
+      - name: Restore dependencies
+        run: dotnet restore SE184746_LMS_Lab1/SE184746_LMS_Lab1.sln
+
+      - name: Build solution
+        run: dotnet build SE184746_LMS_Lab1/SE184746_LMS_Lab1.sln --configuration Release --no-restore
