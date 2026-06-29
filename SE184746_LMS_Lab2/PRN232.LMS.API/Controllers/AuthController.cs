@@ -7,9 +7,10 @@ using PRN232.LMS.Services.Interfaces;
 
 namespace PRN232.LMS.API.Controllers;
 
-/// <summary>Authentication endpoints (version-neutral — accessible at /api/auth/...).</summary>
+/// <summary>Authentication endpoints — accessible at /api/auth/... and /api/v{n}/auth/...</summary>
 [ApiVersionNeutral]
 [Route("api/auth")]
+[Route("api/v{version}/auth")]
 public sealed class AuthController : LmsControllerBase
 {
     private readonly IAuthService _authService;

@@ -54,29 +54,32 @@ public static class DatabaseInitializer
 
     private static async Task SeedUsersAsync(LmsDbContext context, CancellationToken cancellationToken)
     {
-        if (await context.Users.AnyAsync(cancellationToken))
-        {
-            return;
-        }
-
-        var users = new List<User>
-        {
-            new()
-            {
-                Username = "admin",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
-                Role = "Admin"
-            },
-            new()
-            {
-                Username = "user",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("User@123"),
-                Role = "User"
-            }
-        };
-
-        context.Users.AddRange(users);
+        await EnsureUserAsync(context, "admin", "123456", "Admin", cancellationToken);
+        await EnsureUserAsync(context, "user",  "123456", "User",  cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static async Task EnsureUserAsync(
+        LmsDbContext context, string username, string password, string role,
+        CancellationToken cancellationToken)
+    {
+        var existing = await context.Users
+            .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
+
+        if (existing == null)
+        {
+            context.Users.Add(new User
+            {
+                Username = username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                Role = role
+            });
+        }
+        else if (!BCrypt.Net.BCrypt.Verify(password, existing.PasswordHash))
+        {
+            existing.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            existing.Role = role;
+        }
     }
 
     private static async Task<string> ReadSeedScriptAsync(CancellationToken cancellationToken)
